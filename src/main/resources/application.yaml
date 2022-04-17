@@ -1,0 +1,14 @@
+# spring boot props
+spring:
+  application:
+    name: gcs-streaming
+
+# GCS configuration
+gcs:
+  input:
+    bucket: usaa_implementation_dit01
+    path: /input/
+    fileExtension: .json
+  output:
+    bucket: usaa_implementation_dit01
+    path: /output/

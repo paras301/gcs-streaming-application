@@ -1,0 +1,33 @@
+plugins {
+    id 'org.springframework.boot' version "${springboot_version}"
+    id 'io.spring.dependency-management' version "${spring_dependency_management_version}"
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of("${java_version}")
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.integration:spring-integration-core'
+    implementation 'org.springframework.integration:spring-integration-file'
+
+    implementation 'com.google.cloud:google-cloud-nio:0.123.27'
+    implementation 'com.google.cloud:spring-cloud-gcp-starter-storage'
+
+    implementation "org.projectlombok:lombok:${lombok_version}"
+    annotationProcessor "org.projectlombok:lombok:${lombok_version}"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "com.google.cloud:spring-cloud-gcp-dependencies:${springCloudGcpVersion}"
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
