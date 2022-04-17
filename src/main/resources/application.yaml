@@ -6,9 +6,9 @@ spring:
 # GCS configuration
 gcs:
   input:
-    bucket: usaa_implementation_dit01
+    bucket: test_bucket
     path: /input/
     fileExtension: .json
   output:
-    bucket: usaa_implementation_dit01
+    bucket: test_bucket
     path: /output/
