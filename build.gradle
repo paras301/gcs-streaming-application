@@ -1,8 +1,29 @@
 plugins {
-    id 'org.springframework.boot' version "${springboot_version}"
-    id 'io.spring.dependency-management' version "${spring_dependency_management_version}"
+    id 'org.springframework.boot' version "${org_springframework_boot_version}"
+    id 'io.spring.dependency-management' version "${io_spring_dependency_management_version}"
     id 'java'
+    id 'jacoco'
+    id 'checkstyle'
 }
+
+apply from: 'repositories.gradle'
+apply from: 'dependencies.gradle'
+
+if (project.hasProperty("project_version")) {
+    ext.project_version = project.property("project_version")
+} else {
+    ext.project_version = 'local'
+}
+
+if (project.hasProperty("coverage_minimum_rate")) {
+    ext.coverage_minimum_rate_value = (new BigDecimal(project.property("coverage_minimum_rate").toString())) / 100
+} else {
+    ext.coverage_minimum_rate_value = 0.95
+}
+
+version = project_version
+group = project_group
+println "Building project ${project.name} in ${projectDir} with version ${version}, coverage ${coverage_minimum_rate_value}"
 
 repositories {
     mavenCentral()
@@ -14,20 +35,87 @@ java {
     }
 }
 
+ext['log4j2.version'] = "${log4j2_version}"
+ext['tomcat.version'] = "${tomcat_version}"
+
 dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-web-services'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+
     implementation 'org.springframework.integration:spring-integration-core'
-    implementation 'org.springframework.integration:spring-integration-file'
 
-    implementation 'com.google.cloud:google-cloud-nio:0.123.27'
-    implementation 'com.google.cloud:spring-cloud-gcp-starter-storage'
+    implementation "org.projectlombok:lombok:${org_projectlombok_lombok_version}"
+    annotationProcessor "org.projectlombok:lombok:${org_projectlombok_lombok_version}"
 
-    implementation "org.projectlombok:lombok:${lombok_version}"
-    annotationProcessor "org.projectlombok:lombok:${lombok_version}"
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${org_junit_jupiter_junit_jupiter_api_version}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${org_junit_jupiter_junit_jupiter_engine_version}"
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-test-autoconfigure'
 }
 
-dependencyManagement {
-    imports {
-        mavenBom "com.google.cloud:spring-cloud-gcp-dependencies:${springCloudGcpVersion}"
-        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+    jacoco {
+        destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
+        classDumpDir = file("$buildDir/jacoco/classpathdumps")
+    }
+}
+
+springBoot {
+    mainClass = "$springboot_main_class"
+}
+
+bootJar {
+    enabled = true
+    archiveFileName = "processor.jar"
+    destinationDirectory = file("$buildDir/bootLibs")
+}
+
+jar {
+    enabled = true
+}
+
+check {
+    dependsOn checkstyleMain
+    dependsOn checkstyleTest
+    dependsOn jacocoTestCoverageVerification
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.enabled false
+        html.enabled true
+    }
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.enabled false
+        csv.enabled true
+        csv.destination file("${buildDir}/jacocoCsv")
+        html.destination file("${buildDir}/jacocoHtml")
+    }
+}
+
+jacoco {
+    toolVersion = "${jacoco_tool_version}"
+}
+
+jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            limit {
+                minimum = coverage_minimum_rate_value
+            }
+        }
     }
 }

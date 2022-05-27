@@ -1,0 +1,11 @@
+dependencies {
+    implementation 'com.google.cloud:spring-cloud-gcp-starter-storage'
+    implementation 'org.springframework.integration:spring-integration-file'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "com.google.cloud:spring-cloud-gcp-dependencies:${springCloudGcpVersion}"
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}

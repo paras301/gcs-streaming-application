@@ -2,13 +2,25 @@
 spring:
   application:
     name: gcs-streaming
+  server:
+    port: 8080
+    tomcat:
+      threads:
+        max: ${MAX_TOMCAT_THREADS:200}
+
+logging:
+  level:
+    root: error
+    org:
+      springframework: error
+      apache: error
+    com:
+      company: ${LOG_LEVEL:INFO}
 
 # GCS configuration
 gcs:
+  projectId: ${GCP_PROJECT_ID:gcp_project}
   input:
-    bucket: test_bucket
-    path: /input/
+    bucket: ${BUCKET:gcs_bucket}
+    path: ${INPUT_PATH:path/incoming/}
     fileExtension: .json
-  output:
-    bucket: test_bucket
-    path: /output/
